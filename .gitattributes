@@ -1,0 +1,28 @@
+# 确保所有文本文件（包括未明确指定的文件）在 Git 仓库中都使用 LF 行尾符
+* text eol=lf
+
+# 显式地将常见的文本文件设置为 text，确保它们的行尾符被 Git 转换
+*.js    text
+*.ts    text
+*.tsx   text
+*.jsx   text
+*.html  text
+*.css   text
+*.scss  text
+*.json  text
+*.md    text
+*.yml   text
+*.yaml  text
+
+# 强制 shell 脚本使用 LF，无论操作系统如何
+*.sh    text eol=lf
+
+# 常见二进制文件，设置为 unset 或 binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.svg   binary
+*.zip   binary
+*.tar   binary
+*.gz    binary

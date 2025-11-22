@@ -1,0 +1,332 @@
+# RepoVault API v1
+# This file defines the API contract for Sprint 1.
+# It is used to generate mock servers, client SDKs, and TypeScript types.
+openapi: 3.0.2
+
+info:
+  title: RepoVault API
+  description: API for the RepoVault project, a personal GitHub repository collection manager.
+  version: 1.0.0
+  contact:
+    name: RepoVault Project
+    url: https://github.com/your-username/RepoVault
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: Operations for user registration and login.
+  - name: Repositories
+    description: Operations for managing user's favorite repositories.
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Creates a new user account. The username must be unique.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '201':
+          description: User registered successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid input (e.g., username too short, password too weak).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/BadRequestError'
+        '409':
+          description: Username already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/ConflictError'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticates a user and returns a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Login successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid username or password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UnauthorizedError'
+
+  /repos:
+    get:
+      tags:
+        - Repositories
+      summary: Get user's favorite repositories
+      description: Retrieves a list of all repositories favorited by the authenticated user.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: A list of favorite repositories.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepoListResponse'
+        '401':
+          description: Unauthorized - Token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      tags:
+        - Repositories
+      summary: Add a new repository to favorites
+      description: Fetches repository info from GitHub and adds it to the user's collection.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddRepoRequest'
+      responses:
+        '201':
+          description: Repository added successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          description: Invalid GitHub URL format.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/BadRequestError'
+        '401':
+          description: Unauthorized - Token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: GitHub repository not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: User has already favorited this repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/ConflictError'
+
+components:
+  schemas:
+    # --- Request Schemas ---
+    AuthRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: The user's unique username.
+          example: "jane_doe"
+          minLength: 3
+          maxLength: 20
+        password:
+          type: string
+          description: The user's password.
+          format: password
+          example: "a-very-secure-password"
+          minLength: 8
+
+    AddRepoRequest:
+      type: object
+      required:
+        - githubUrl
+      properties:
+        githubUrl:
+          type: string
+          description: The full URL of the GitHub repository.
+          format: uri
+          example: "https://github.com/facebook/react"
+
+    # --- Response Schemas ---
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier for the user.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        username:
+          type: string
+          description: The user's username.
+          example: "jane_doe"
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Login successful."
+        token:
+          type: string
+          format: jwt
+          description: A JSON Web Token for authenticating subsequent requests.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        user:
+          $ref: '#/components/schemas/User'
+
+    Repo:
+      type: object
+      description: Information fetched from a GitHub repository.
+      properties:
+        githubId:
+          type: integer
+          description: The unique ID of the repository on GitHub.
+          example: 10270250
+        owner:
+          type: string
+          description: The owner of the repository.
+          example: "facebook"
+        repoName:
+          type: string
+          description: The name of the repository.
+          example: "react"
+        description:
+          type: string
+          nullable: true
+          description: The repository's description from GitHub.
+          example: "A declarative, efficient, and flexible JavaScript library for building user interfaces."
+        language:
+          type: string
+          nullable: true
+          description: The primary programming language.
+          example: "JavaScript"
+        stars:
+          type: integer
+          description: The number of stars the repository has.
+          example: 220000
+
+    Item:
+      type: object
+      description: A user's favorite item, linking a user to a repository.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier for the favorite item.
+          example: "f1e2d3c4-b5a6-7890-1234-567890abcdef"
+        createdAt:
+          type: string
+          format: date-time
+          description: The timestamp when the item was favorited.
+          example: "2023-10-27T10:00:00Z"
+        repo:
+          $ref: '#/components/schemas/Repo'
+        # Notes and tags are omitted for Sprint 1 but will be added later.
+
+    RepoListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+        total:
+          type: integer
+          description: The total number of items for the user.
+          example: 42
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: A machine-readable error code.
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: A human-readable error message.
+          example: "The request payload is invalid."
+
+  # --- Reusable Response Definitions ---
+  responses:
+    BadRequestError:
+      description: Bad Request - The input is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "INVALID_URL"
+            message: "Please provide a valid GitHub repository URL."
+
+    UnauthorizedError:
+      description: Unauthorized - Authentication failed or token not provided.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "INVALID_CREDENTIALS"
+            message: "Username or password is incorrect."
+
+    NotFoundError:
+      description: Not Found - The requested resource could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "REPO_NOT_FOUND"
+            message: "The specified GitHub repository could not be found."
+
+    ConflictError:
+      description: Conflict - The resource already exists.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "REPO_ALREADY_FAVORITED"
+            message: "You have already favorited this repository."
+
+  # --- Security Schemes ---
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Please enter a valid JWT token (without the 'Bearer ' prefix)."

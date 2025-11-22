@@ -1,0 +1,52 @@
+# http://editorconfig.org
+
+# 根配置：应用于所有文件
+root = true
+
+# -----------------
+# 1. 通用文件配置
+# -----------------
+
+[*]
+# 确保所有文件都使用 UTF-8 编码
+charset = utf-8
+
+# 强制使用 LF 作为行尾符，与我们设置的 .gitattributes 一致
+# 这对于跨平台兼容性至关重要
+end_of_line = lf
+
+# 强制文件以新行结束（确保文件末尾没有多余的空行，但有一个换行符）
+insert_final_newline = true
+
+# 禁用 Trim Trailing Whitespace (TTW)，以避免在某些文件中（如Markdown）误删必要的尾随空格
+# 但通常我们希望保持为 true，以清除行尾多余空格
+trim_trailing_whitespace = true
+
+
+# -----------------
+# 2. 编程语言文件配置 (例如：JS, TS, JSON, CSS, HTML, Vue, Markdown)
+# -----------------
+
+# 针对所有常用的代码文件类型
+[{*.js,*.ts,*.tsx,*.json,*.css,*.scss,*.html,*.md}]
+# 告诉编辑器使用空格缩进 (这是现代 JS/TS/Next.js 的标准)
+indent_style = space
+# 定义缩进大小为 2 个空格 (与 Prettier 默认值和多数标准一致)
+indent_size = 2
+
+# -----------------
+# 3. 特殊文件配置
+# -----------------
+
+# 针对 Markdown 文件 (.md)
+[*.md]
+# Markdown 中通常需要更大的行宽来避免频繁换行
+max_line_length = off 
+trim_trailing_whitespace = false # 允许 Markdown 标题或列表后有尾随空格
+indent_style = space
+indent_size = 4 # 可选：部分 Markdown 列表使用 4 个空格缩进
+
+# 针对 Makefile (如果项目中有)
+[Makefile]
+# Makefile 必须使用 Tab 缩进，否则无法运行
+indent_style = tab
