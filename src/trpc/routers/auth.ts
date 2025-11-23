@@ -29,12 +29,11 @@ export const authRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      const user = await loginUser(input.username, input.password);
-      // In a real implementation, we would generate a JWT token here
+      const { user, token } = await loginUser(input.username, input.password);
       return {
         id: user.id,
         username: user.username,
-        // token: generateToken(user.id)
+        token,
       };
     }),
 });

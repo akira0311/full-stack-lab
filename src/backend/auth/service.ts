@@ -1,5 +1,6 @@
 import { hashPassword, comparePassword } from '@/utils/password';
 import { prisma } from '@/db';
+import { generateToken } from '@/utils/jwt';
 
 /**
  * Registers a new user
@@ -42,10 +43,10 @@ export async function registerUser(username: string, password: string) {
 }
 
 /**
- * Logs in a user
+ * Logs in a user and generates a JWT token
  * @param username - The username of the user
  * @param password - The password of the user
- * @returns The user object if login is successful
+ * @returns The user object and JWT token if login is successful
  * @throws Error if credentials are invalid
  */
 export async function loginUser(username: string, password: string) {
@@ -71,6 +72,42 @@ export async function loginUser(username: string, password: string) {
   if (!isPasswordValid) {
     throw new Error('Invalid username or password');
   }
+
+  // Generate JWT token
+  const token = generateToken(user);
+
+  return {
+    user: {
+      id: user.id,
+      username: user.username,
+    },
+    token,
+  };
+}
+
+/**
+ * Validates a JWT token and returns the associated user
+ * @param token - The JWT token to validate
+ * @returns The user object if token is valid, null otherwise
+ */
+export async function validateToken(token: string) {
+  // Import verifyToken here to avoid circular dependencies
+  const { verifyToken } = await import('@/utils/jwt');
+
+  // Verify the token
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return null;
+  }
+
+  // Fetch the user from the database
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.userId },
+    select: {
+      id: true,
+      username: true,
+    },
+  });
 
   return user;
 }

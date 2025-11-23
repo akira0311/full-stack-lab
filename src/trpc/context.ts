@@ -1,4 +1,5 @@
 import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
+import { validateToken } from '@/backend/auth/service';
 
 interface User {
   id: string;
@@ -12,9 +13,23 @@ export interface Context {
 export async function createContext({
   req,
 }: FetchCreateContextFnOptions): Promise<Context> {
-  // In a real implementation, we would verify the JWT token here
-  // For now, we'll just return a null user
+  // Get the authorization header
+  const authHeader = req.headers.get('authorization');
+  const token = authHeader?.startsWith('Bearer ')
+    ? authHeader.substring(7)
+    : null;
+
+  // If no token, return null user
+  if (!token) {
+    return {
+      user: null,
+    };
+  }
+
+  // Validate the token and get the user
+  const user = await validateToken(token);
+
   return {
-    user: null,
+    user,
   };
 }
