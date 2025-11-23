@@ -1,99 +1,17 @@
-import { defineConfig } from 'eslint/config';
-import js from '@eslint/js';
-import tsParser from '@typescript-eslint/parser';
-import nextPlugin from '@next/eslint-plugin-next';
-import tseslint from '@typescript-eslint/eslint-plugin';
-import pluginReactHooks from 'eslint-plugin-react-hooks';
-import pluginReact from 'eslint-plugin-react';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
+// @ts-check
 
-export default defineConfig([
-  // JavaScript recommended configuration
-  js.configs.recommended,
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
+import prettier from 'eslint-config-prettier/flat';
 
+export default defineConfig(
   // Next.js recommended configuration
-  {
-    files: ['**/*.ts', '**/*.tsx'],
-    plugins: {
-      '@next/next': nextPlugin,
-    },
-    rules: {
-      ...nextPlugin.configs['core-web-vitals'].rules,
-    },
-  },
-
-  // TypeScript recommended configuration
-  {
-    files: ['**/*.ts', '**/*.tsx'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        project: './tsconfig.json',
-        ecmaVersion: 2022,
-        sourceType: 'module',
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-    },
-    plugins: {
-      '@typescript-eslint': tseslint,
-    },
-    rules: {
-      ...tseslint.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'error',
-      '@typescript-eslint/no-unsafe-function-type': 'error',
-      '@typescript-eslint/no-wrapper-object-types': 'error',
-      '@typescript-eslint/prefer-as-const': 'error',
-      '@typescript-eslint/triple-slash-reference': 'error',
-    },
-  },
-
-  // React Hooks recommended configuration
-  {
-    plugins: {
-      'react-hooks': pluginReactHooks,
-    },
-    rules: {
-      ...pluginReactHooks.configs.recommended.rules,
-    },
-  },
-
-  // React recommended configuration
-  {
-    plugins: {
-      react: pluginReact,
-    },
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-      },
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
-    rules: {
-      ...pluginReact.configs.recommended.rules,
-      'react/prop-types': 'off',
-      'react/react-in-jsx-scope': 'off',
-    },
-  },
+  ...nextVitals,
+  ...nextTs,
 
   // Prettier recommended configuration
-  eslintPluginPrettierRecommended,
+  prettier,
 
   // Custom configuration
   {
@@ -113,14 +31,12 @@ export default defineConfig([
     },
   },
 
-  {
-    ignores: [
-      'node_modules/',
-      '.next/',
-      'dist/',
-      'build/',
-      '.turbo/',
-      'coverage/',
-    ],
-  },
-]);
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    '.next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
+  ]),
+);
