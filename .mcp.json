@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "ESLint": {
+      "command": "npx",
+      "args": [
+        "@eslint/mcp@latest"
+      ],
+      "type": "stdio"
+    },
+    "prisma-local": {
+      "command": "npx",
+      "args": [
+        "prisma",
+        "mcp"
+      ],
+      "type": "stdio"
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "shadcn@latest",
+        "mcp"
+      ],
+      "type": "stdio"
+    }
+  }
+}
