@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { TRPCProvider } from '@/trpc/provider';
+import './global.css';
 
 export const metadata: Metadata = {
   title: 'RepoVault',
@@ -13,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <main>{children}</main>
+        <TRPCProvider>
+          <main>{children}</main>
+        </TRPCProvider>
       </body>
     </html>
   );
