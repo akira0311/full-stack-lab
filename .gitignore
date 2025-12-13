@@ -1,8 +1,14 @@
 .qoder
 .next
 
+.env
+.env.*
+!.env.example
+
 node_modules
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
 AGENTS.md
+
+generated
